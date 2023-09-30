@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 class AccountTier(models.Model):
     name = models.CharField(max_length=50)
     thumbnail_sizes = models.JSONField()
-    can_generate_expiring_liks = models.BooleanField(default=False)
+    can_generate_expiring_links = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
