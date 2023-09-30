@@ -20,7 +20,6 @@ from image_app import views
 from django.contrib import admin
 
 router = DefaultRouter()
-router.register(r'account_tiers', views.AccountTierViewSet)
 router.register(r'images', views.ImageViewSet)
 
 

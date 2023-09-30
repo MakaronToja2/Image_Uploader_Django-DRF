@@ -1,10 +1,5 @@
 from rest_framework import serializers
-from .models import Image, AccountTier
-
-class AccountTierSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AccountTier
-        fields = ['name', 'thumbnail_sizes', 'can_generate_expiring_links']
+from .models import Image
 
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
