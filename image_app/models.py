@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from PIL import Image as PilImage
+import os
 
 class CustomUser(AbstractUser):
     BASIC = 'Basic'
@@ -28,3 +30,30 @@ class Image(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s Image {self.id}"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)  # Call the original save method
+        img = PilImage.open(self.image_file.path)
+
+        thumbnail_sizes = {}
+
+        if self.user.account_tier == CustomUser.BASIC:
+            thumbnail_sizes['thumbnail_200'] = (200, 200)
+        elif self.user.account_tier == CustomUser.PREMIUM:
+            thumbnail_sizes['thumbnail_200'] = (200, 200)
+            thumbnail_sizes['thumbnail_400'] = (400, 400)
+        elif self.user.account_tier == CustomUser.ENTERPRISE:
+            thumbnail_sizes['thumbnail_200'] = (200, 200)
+            thumbnail_sizes['thumbnail_400'] = (400, 400)
+            # Add more sizes or special features here if needed
+
+        for name, size in thumbnail_sizes.items():
+            thumb = img.resize(size, PilImage.LANCZOS)
+            thumb_path = os.path.join(
+                os.path.dirname(self.image_file.path),
+                f"{name}_{os.path.basename(self.image_file.name)}"
+            )
+            thumb.save(thumb_path)
+
+
+

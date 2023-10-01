@@ -15,15 +15,17 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from image_app import views
 from django.contrib import admin
-
-router = DefaultRouter()
-router.register(r'images', views.ImageViewSet)
-
+from image_app import views
+from rest_framework.urlpatterns import format_suffix_patterns
 
 urlpatterns = [
-    path('', include(router.urls)),
     path('admin/', admin.site.urls),
+    path('list_images/', views.ListImageViewSet.as_view({'get': 'list'}), name='list-images'),
+    path('add_image/', views.AddImageViewSet.as_view({'post': 'create'}), name='add-image'),
+    path('images/<int:pk>/', views.ImageViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='image-detail'),
 ]
+
+urlpatterns = format_suffix_patterns(urlpatterns)
+
+
