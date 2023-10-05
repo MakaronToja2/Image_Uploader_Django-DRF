@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Image, CustomUser
-import os
+from django.urls import reverse
 
 class WriteImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -12,31 +12,23 @@ class BaseImageSerializer(serializers.ModelSerializer):
         model = Image
         fields = ['id', 'upload_time']
 
+
     def get_thumbnail_urls(self, obj):
         user = self.context['request'].user
         thumbnails = {}
-        base_dir = os.path.dirname(obj.image_file.path)
 
-        def thumbnail_exists(name):
-            thumb_path = os.path.join(
-                base_dir,
-                f"{name}_{os.path.basename(obj.image_file.name)}"
-            )
-            return os.path.exists(thumb_path)
+        base_url = self.context['request'].build_absolute_uri(reverse('image-detail', args=[obj.id]))
 
         if user.account_tier == CustomUser.BASIC:
-            if thumbnail_exists('thumbnail_200'):
-                thumbnails['thumbnail_200'] = obj.image_file.url.replace("images/", "images/thumbnail_200_")
+            thumbnails['thumbnail_200'] = f"{base_url}thumbnail_200_{obj.image_file.name.split('/')[-1]}"
         elif user.account_tier == CustomUser.PREMIUM:
-            if thumbnail_exists('thumbnail_200'):
-                thumbnails['thumbnail_200'] = obj.image_file.url.replace("images/", "images/thumbnail_200_")
-            if thumbnail_exists('thumbnail_400'):
-                thumbnails['thumbnail_400'] = obj.image_file.url.replace("images/", "images/thumbnail_400_")
+            thumbnails['thumbnail_200'] = f"{base_url}thumbnail_200_{obj.image_file.name.split('/')[-1]}"
+            thumbnails['thumbnail_400'] = f"{base_url}thumbnail_400_{obj.image_file.name.split('/')[-1]}"
         elif user.account_tier == CustomUser.ENTERPRISE:
-            if thumbnail_exists('thumbnail_200'):
-                thumbnails['thumbnail_200'] = obj.image_file.url.replace("images/", "images/thumbnail_200_")
-            if thumbnail_exists('thumbnail_400'):
-                thumbnails['thumbnail_400'] = obj.image_file.url.replace("images/", "images/thumbnail_400_")
+            original_image_url = self.context['request'].build_absolute_uri(reverse('serve-original-image', kwargs={'image_name': obj.image_file.name.split('/')[-1]}))
+            thumbnails['original_image'] = original_image_url
+            thumbnails['thumbnail_200'] = f"{base_url}thumbnail_200_{obj.image_file.name.split('/')[-1]}"
+            thumbnails['thumbnail_400'] = f"{base_url}thumbnail_400_{obj.image_file.name.split('/')[-1]}"
             # Logic for expiring link can be added here
 
         return thumbnails

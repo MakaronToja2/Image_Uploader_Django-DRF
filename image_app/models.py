@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 from PIL import Image as PilImage
 import os
 
@@ -25,13 +26,19 @@ class CustomUser(AbstractUser):
 
 class Image(models.Model):
     user = models.ForeignKey(CustomUser, related_name='images', on_delete=models.CASCADE)
-    image_file = models.ImageField(upload_to='images/')
+    image_file = models.ImageField(upload_to='')
     upload_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.user.username}'s Image {self.id}"
 
     def save(self, *args, **kwargs):
+        # Validate file extension
+        valid_extensions = ['png', 'jpg']
+        file_extension = self.image_file.name.split('.')[-1]
+        if file_extension.lower() not in valid_extensions:
+            raise ValidationError("Unsupported file extension. Use PNG or JPG.")
+
         super().save(*args, **kwargs)  # Call the original save method
         img = PilImage.open(self.image_file.path)
 
@@ -54,6 +61,3 @@ class Image(models.Model):
                 f"{name}_{os.path.basename(self.image_file.name)}"
             )
             thumb.save(thumb_path)
-
-
-
