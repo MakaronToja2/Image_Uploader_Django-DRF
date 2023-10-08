@@ -41,7 +41,7 @@ class Image(models.Model):
         if file_extension.lower() not in valid_extensions:
             raise ValidationError("Unsupported file extension. Use PNG or JPG.")
 
-        super().save(*args, **kwargs)  # Call the original save method
+        super().save(*args, **kwargs)
         img = PilImage.open(self.image_file.path)
 
         thumbnail_sizes = {}

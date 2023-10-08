@@ -8,6 +8,7 @@ from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta
 
+#Serializer Used to create images
 class WriteImageSerializer(serializers.ModelSerializer):
     generate_expiring_link = serializers.BooleanField(write_only=True, required=False, default=False)
     expiring_time = serializers.IntegerField(write_only=True, required=False, default=300)
@@ -28,12 +29,10 @@ class WriteImageSerializer(serializers.ModelSerializer):
         fields = ['id', 'image_file', 'upload_time', 'generate_expiring_link', 'expiring_time']
 
     def validate_expiring_time(self, value):
-        if value < 10 or value > 30000:
+        if value < 300 or value > 30000:
             raise serializers.ValidationError("Expiring time should be between 300 and 30000 seconds")
         return value
 
-    def delete_temp_image(self, path):
-        os.remove(path)
     @staticmethod
     def delete_temp_image(expiring_path, instance):
         if os.path.exists(expiring_path):
@@ -41,11 +40,12 @@ class WriteImageSerializer(serializers.ModelSerializer):
         instance.expiring_image_path = None
         instance.expiration_time = None
         instance.save()
+
     def create(self, validated_data):
         print(validated_data)
         user = self.context['request'].user
         generate_expiring_link = validated_data.pop('generate_expiring_link', False)
-        expiring_time = validated_data.pop('expiring_time', 300)
+        expiring_time = validated_data.pop('expiring_time')
 
         instance = Image.objects.create(**validated_data)
 

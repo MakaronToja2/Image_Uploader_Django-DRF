@@ -1,12 +1,9 @@
-from rest_framework import viewsets
 from .models import Image, CustomUser
 from .serializers import BasicImageSerializer, PremiumImageSerializer, EnterpriseImageSerializer, WriteImageSerializer
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 import os
 from django.conf import settings
-
-
 from rest_framework import viewsets
 
 class AddImageViewSet(viewsets.ModelViewSet):
@@ -32,7 +29,7 @@ class ImageViewSet(viewsets.ModelViewSet):
         elif user.account_tier == CustomUser.ENTERPRISE:
             return EnterpriseImageSerializer
         else:
-            return BasicImageSerializer  # Default, can also raise an exception if needed
+            return BasicImageSerializer
 
 class ListImageViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
@@ -48,7 +45,7 @@ class ListImageViewSet(viewsets.ReadOnlyModelViewSet):
 
             return EnterpriseImageSerializer
         else:
-            return BasicImageSerializer  # Default, can also raise an exception if needed
+            return BasicImageSerializer
 
 def serve_image(request, pk, thumbnail_size, image_name):
     image = get_object_or_404(Image, pk=pk)
