@@ -28,6 +28,8 @@ class Image(models.Model):
     user = models.ForeignKey(CustomUser, related_name='images', on_delete=models.CASCADE)
     image_file = models.ImageField(upload_to='')
     upload_time = models.DateTimeField(auto_now_add=True)
+    expiring_image_path = models.CharField(max_length=255, null=True, blank=True)
+    expiration_time = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.username}'s Image {self.id}"
